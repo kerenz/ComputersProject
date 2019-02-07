@@ -1,0 +1,122 @@
+import math
+
+def a_func(data_list):
+    x_val = data_list["x"]
+    dx = data_list["dx"]
+    y_val = data_list["y"]
+    dy = data_list["dy"]
+
+    xy_val = []
+    x_val_squared = []
+    for i in range(len(x_val)):
+        xy_val.append(x_val[i] * y_val[i])
+        x_val_squared.append(x_val[i] ** 2)
+
+    # Averages:
+    xy_avrg = chi_value_avrg(xy_val, dy)
+    x_avrg = chi_value_avrg(x_val, dy)
+    y_avrg = chi_value_avrg(y_val, dy)
+    x_squared_avrg = chi_value_avrg(x_val_squared, dy)
+    a_out = (xy_avrg - x_avrg * y_avrg) / (x_squared_avrg - x_avrg ** 2)
+    return (a_out)
+
+
+def b_func(data_list):
+    x_val = data_list["x"]
+    dx = data_list["dx"]
+    y_val = data_list["y"]
+    dy = data_list["dy"]
+    a = a_func(data_list)
+    x_avrg = chi_value_avrg(x_val, dy)
+    y_avrg = chi_value_avrg(y_val, dy)
+    b_out = y_avrg - x_avrg * a
+
+    return (b_out)
+
+
+# Uncertainties:
+
+def da_func(data_list):
+    x_val = data_list["x"]
+    dx = data_list["dx"]
+    y_val = data_list["y"]
+    dy = data_list["dy"]
+    dy_squared = []
+    x_val_squared = []
+    N = len(x_val)
+    for i in range(N):
+        dy_squared.append(dy[i] ** 2)
+        x_val_squared.append(dx[i] ** 2)
+    dy_squared_avrg = chi_value_avrg(dy_squared, dy)
+    x_squared_avrg = chi_value_avrg(x_val_squared, dy)
+    x_avrg = chi_value_avrg(x_val, dy)
+    da_out = dy_squared_avrg / (N * (x_squared_avrg - x_avrg ** 2))
+
+    return (da_out)
+
+
+def db_func(data_list):
+    x_val = data_list["x"]
+    dx = data_list["dx"]
+    y_val = data_list["y"]
+    dy = data_list["dy"]
+    dy_squared = []
+    x_val_squared = []
+    N = len(x_val)
+    for i in range(N):
+        dy_squared.append(dy[i] ** 2)
+        x_val_squared.append(dx[i] ** 2)
+    dy_squared_avrg = chi_value_avrg(dy_squared, dy)
+    x_squared_avrg = chi_value_avrg(x_val_squared, dy)
+    x_avrg = chi_value_avrg(x_val, dy)
+    db_out = (dy_squared_avrg * (x_avrg ** 2)) / (N * (x_squared_avrg - x_avrg ** 2))
+
+    return (db_out)
+
+
+def avrg_chi_func(val, dy):
+    dy_squared = map(lambda y: y ** 2, dy)
+
+    numerator = []
+    denominator = []
+    chi_output = []
+    for i in range(len(val)):
+        numerator.append(val[i] / dy[i])
+        denominator.append(1 / dy[i])
+        chi_output = sum(numerator)/sum(denominator)
+    return (chi_output)
+
+
+def chi_squared_func(data_list):
+    a = a_func(data_list)
+    b = b_func(data_list)
+
+    x_val = data_list["x"]
+    dx = data_list["dx"]
+    y_val = data_list["y"]
+    dy = data_list["dy"]
+
+    frac = []
+    for i in range(len(x_val)):
+        frac.append(((y_val[i] - (a * x_val[i] + b)) / dy[i]))
+
+    squared_val = map(lambda value: value ** 2, frac)
+    sum_squared_val = sum(squared_val)
+
+    return (sum_squared_val)
+
+
+def chi_squared_reduced_func(chi_squared, N):
+    chi_red = chi_squared / (N - 2)
+    return (chi_red)
+
+
+def fit_res(data_list):
+    a = a_func(data_list)
+    b = b_func(data_list)
+    da = da_func(data_list)
+    db = db_func(data_list)
+    chi_squared = chi_squared_func(data_list)
+    chi_squared_reduced = chi_squared_reduced_func(chi_squared, len(data_list["x"]))
+
+    return (a, b, da, db, chi_squared, chi_squared_reduced)
