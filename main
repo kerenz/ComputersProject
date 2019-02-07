@@ -1,0 +1,49 @@
+ import ComputersProjectInput
+import ComputersProjectMath as ComputersProjectMath
+from matplotlib import pyplot
+from matplotlib.mlab import frange
+import numpy
+
+
+def linear_function(x, a):
+	return (a[1] + x * a[0])
+
+def plot_fitted_graph(min, max, a, func=linear_function, c="red"):
+	x_val = numpy.array(frange(min, max))
+	y_val = [func(x, a) for x in x_val]
+	pyplot.plot(x_val, y_val, color=c)
+
+def plot_data_points(data_list):
+	x_val = data_list["x"]
+	dx = data_list["dx"]
+	y_val = data_list["y"]
+	dy = data_list["dy"]
+
+	for i in range(len(x_val)):
+		pyplot.errorbar(x_val[i], y_val[i], yerr=dy[i], xerr=dx[i], ecolor="b", elinewidth=0, barsabove=True)
+
+def save_graph(name):
+	pyplot.savefig(name+".svg", format="svg")
+
+
+def fit_linear(filename):
+	y_title, x_title, data_list = ComputersProjectInput.load_file(filename)
+
+	a, b, da, db, chi_squared, chi_red = ComputersProjectMath.fit_res(data_list)
+
+
+print('a = {a_value} +-{a_error}'.format(a_value=a, a_error=da))
+print('b = {b_value} +-{b_error}'.format(b_value=b, b_error=db))
+print('chi2 = ' + str(chi_squared))
+print('chi2_reduced = ' + str(chi_red))
+
+	# Plot:
+	pyplot.figure()
+	pyplot.title("Generated linear fit")
+	pyplot.ylabel(y_title)
+	pyplot.xlabel(x_title)
+	plot_fitted_graph(min(data_list["x"]), max(data_list["x"]), (a, b))
+	plot_data_points(data_list)
+
+	save_graph("fit_linear")
+	pyplot.show()
